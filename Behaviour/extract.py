@@ -135,7 +135,7 @@ def update_svm_input(pid_info):
     pid_info["goodbad"]=get_beh_svm_result(pid_info["svm_input"][0:15])
     logger.debug("the application %s result %d "%(pid_info["process"],pid_info["goodbad"]))
 #update db and db-version 
-
+#line should be A.exe\t0|1\t|list
     if os.path.isfile(sys.argv[3]):
         f=open(sys.argv[3],"r")
         old=f.readlines()
@@ -150,7 +150,7 @@ def update_svm_input(pid_info):
                 break
         
         if exist == 1:
-            value=int(exist_line.strip().split('\t')[-1])
+            value=int(exist_line.strip().split('\t')[1])
             logger.debug("the old value is %d, the new value is %d "%(value,pid_info["goodbad"]))
             if value == pid_info["goodbad"]:
                f.close()
@@ -160,7 +160,11 @@ def update_svm_input(pid_info):
                 for index , i  in enumerate(old):
                     logger.debug("will update the result  ")
                     if pid_info["process"].split('\\')[-1] in i:
-                        old[index]=pid_info["process"].split('\\')[-1]+"\t"+str(pid_info["goodbad"])+'\n'
+                        b_list=pid_info["svm_input"][0:15]
+                        a=""
+                        for i  in b_list:
+                            a+=str(i)
+                        old[index]=pid_info["process"].split('\\')[-1]+"\t"+str(pid_info["goodbad"])+'\t'+a+'\n'
                         break
                 
                        
@@ -174,7 +178,11 @@ def update_svm_input(pid_info):
             logger.debug("there is no record for the application %s, will add it  "%(pid_info["process"]))
             f.close()
             g=open(sys.argv[3],"w")
-            record=pid_info["process"].split('\\')[-1]+"\t"+str(pid_info["goodbad"])+'\n'  
+            b_list=pid_info["svm_input"][0:15]
+            a=""
+            for i  in b_list:
+                a+=str(i)
+            record=pid_info["process"].split('\\')[-1]+"\t"+str(pid_info["goodbad"])+'\t'+a+'\n'  
             old.append(record)
             g.writelines(old)
             logger.debug("there is no record for the application %s, the new content is %s "%(pid_info["process"],old))
@@ -183,7 +191,11 @@ def update_svm_input(pid_info):
     else:
         logger.debug("there is no such file  ")
         g=open(sys.argv[3],"w")
-        g.write(pid_info["process"].split('\\')[-1]+"\t"+str(pid_info["goodbad"])+'\n')
+        b_list=pid_info["svm_input"][0:15]
+        a=""
+        for i  in b_list:
+            a+=str(i)
+        g.write(pid_info["process"].split('\\')[-1]+"\t"+str(pid_info["goodbad"])+'\t'+a+'\n')
         logger.debug("directly write it %s ")
         update_db_version(sys.argv[4])
         g.close()
