@@ -1,0 +1,105 @@
+{
+    "Behaviour": {
+        "@description": "The sample drops executable files in temp.",
+        "@name": "Drops_Executable_Files_Temp",
+        "Indicator": {
+            "@mode": "1",
+            "@operator": "AND",
+            "Indicator": {
+                "@operator": "OR",
+                "IndicatorItem": [
+                    {
+                        "@condition": "eq_i",
+                        "Content": {
+                            "#text": "application/x-msdos-executable",
+                            "@type": "string"
+                        },
+                        "Context": {
+                            "@document": "FileItem",
+                            "@search": "FileItem\\WriteFile\\FileType"
+                        }
+                    },
+                    {
+                        "@condition": "regex_i",
+                        "Content": {
+                            "#text": ".exe$",
+                            "@type": "string"
+                        },
+                        "Context": {
+                            "@document": "FileItem",
+                            "@search": "FileItem\\WriteFile\\FileName"
+                        }
+                    },
+                    {
+                        "@condition": "regex_i",
+                        "Content": {
+                            "#text": ".vbs$",
+                            "@type": "string"
+                        },
+                        "Context": {
+                            "@document": "FileItem",
+                            "@search": "FileItem\\WriteFile\\FileName"
+                        }
+                    },
+                    {
+                        "@condition": "regex_i",
+                        "Content": {
+                            "#text": ".cmd$",
+                            "@type": "string"
+                        },
+                        "Context": {
+                            "@document": "FileItem",
+                            "@search": "FileItem\\WriteFile\\FileName"
+                        }
+                    },
+                    {
+                        "@condition": "regex_i",
+                        "Content": {
+                            "#text": ".lnk$",
+                            "@type": "string"
+                        },
+                        "Context": {
+                            "@document": "FileItem",
+                            "@search": "FileItem\\WriteFile\\FileName"
+                        }
+                    },
+                    {
+                        "@condition": "regex_i",
+                        "Content": {
+                            "#text": "ProcessItem\\CreateProcess\\FilePath",
+                            "@type": "container"
+                        },
+                        "Context": {
+                            "@document": "FileItem",
+                            "@search": "FileItem\\WriteFile\\FilePath"
+                        }
+                    }
+                ]
+            },
+            "IndicatorItem": {
+                "@condition": "regex_i",
+                "Content": {
+                    "@type": "array",
+                    "Item": [
+                        {
+                            "#text": "%Temp%",
+                            "@type": "string"
+                        },
+                        {
+                            "#text": "%AppData%",
+                            "@type": "string"
+                        },
+                        {
+                            "#text": "%UserProfile%",
+                            "@type": "string"
+                        }
+                    ]
+                },
+                "Context": {
+                    "@document": "FileItem",
+                    "@search": "FileItem\\WriteFile\\FilePath"
+                }
+            }
+        }
+    }
+}

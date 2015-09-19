@@ -1,0 +1,12 @@
+good/bad   'The sample encrypts files.'  'The sample makes additional suspicious changes onto system .'  'The sample steals private data'  'The sample encrypts files.'  'The sample executes Windows tools.' 'The sample makes suspicious changes onto network configurations.'  'sample of auto run shared common between systems'  'The sample tries to install a driver.'  'The sample adds itself into autorun entries to restart every time of reboot.'  'The sample executes Windows tools.'  'test VM'  'The sample makes suspicious changes onto system 001.'  'The sample installs sniffer tools to monitor local network traffic'
+0      0  0  0 0 0 0 0 0 0 0 0  0
+1      0  0  0 0 0 0 0 1 0 0 0  1
+1      0  0  0 0 0 0 0 0 0 0 1  0
+1      0  1  0 0 0 0 0 0 0 0 0  0
+1      1 1  0 0 1 1  0 0 0 0 0  0 
+1      1 0 0 0 1 1  0 0 1 0 0  0 
+1      1 1  0 0 1 1  0 0 0 1 0  0 
+1      1 1  0 0 1 1  0 0 0 0 1  0 
+1      1 1  0 0 1 1  0 0 0 0 0  1 
+1      1 1  0 0 1 1  0 0 0 0 0  1 
+1      1 1  0 0 1 1  0 0 0 0 1  0 
