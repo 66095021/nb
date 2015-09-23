@@ -1,0 +1,49 @@
+<system-event time="2015/9/23 14:47:18.438" type="process" processId="488" process="C:\virus samples\panda.exe" action="CRAETE" object1="2680" object2="C:\Windows\explorer.exe" disposition="BLOCK"/>
+
+<system-event time="2015/9/23 14:47:18.458" type="process" processId="488" process="C:\virus samples\panda.exe" action="TERMINATE" object1="-1664" object2="" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 14:47:46.319" type="file" processId="1308" process="C:\Program Files (x86)\Internet Explorer\iexplore.exe" action="READ" object1="" object2="C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\Cookies\administrator@baidu[1].txt" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 16:12:29.608" type="file" processId="2300" process="C:\Program Files (x86)\Notepad++\notepad++.exe" action="WRITE" object1="" object2="C:\Users\Administrator\AppData\Roaming\Notepad++\plugins\config\PluginManager.ini" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 14:47:46.348" type="network" processId="1308" process="C:\program files (x86)\internet explorer\iexplore.exe" action="CONNECT" object1="10.236.11.193:49220" object2="61.135.169.121:80" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 16:35:55.348" type="network" processId="3920" process="C:\share\nc.exe" action="ACCEPT" object1="10.236.11.193:8888" object2="10.228.165.85:54858" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 16:28:12.72" type="registry" processId="1328" process="C:\Windows\regedit.exe" action="Key CREATE" object1="\REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\New Key #1" object2="" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 16:28:14.949" type="registry" processId="1328" process="C:\Windows\regedit.exe" action="Key MODIFIED" object1="\REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\New Key #1" object2="" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 16:11:48.472" type="registry" processId="1328" process="C:\Windows\regedit.exe" action="Key DELETED" object1="\REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\test:f
+
+<system-event time="2015/9/23 16:28:31.716" type="registry" processId="1328" process="C:\Windows\regedit.exe" action="Value CREATE" object1="\REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\hailikey\hailivalue11" object2="" disposition="ALLOW"/>
+
+<system-event time="2015/9/23 16:28:39.187" type="registry" processId="1328" process="C:\Windows\regedit.exe" action="Value DELETED" object1="\REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\hailikey11\hailivalue11" object2="" disposition="ALLOW"/>
+
+<system-event time="2015/9/23/ 14:47:46" type="http" processId="1308" process="C:\Program Files (x86)\Internet Explorer\iexplore.exe" action="www.baidu.com/" object1="10.236.11.193:49220" object2="61.135.169.121:80" disposition="ALLOW"/>
+
+
+
+
+
+1. process
+action="CRAETE"
+action="TERMINATE"
+
+2. file
+action="READ"
+action="WRITE"
+
+3. network
+action="CONNECT"
+action="ACCEPT"
+
+4. registry
+action="Key CREATE"
+action="Key MODIFIED"
+action="Key DELETED"
+action="Value CREATE"
+action="Value DELETED"
+
+5 http
+action=url
