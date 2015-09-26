@@ -29,7 +29,7 @@ def do_search(flags, regex, content):
 	logger.debug("regex search done, the result is %d  "%(match))
 #one indicator return one list  result ,sub-indicators is a list 
 	return match
-def  cal_indicator(ioc_info,process_info,parent_code):
+def  cal_indicator(ioc_info,process_info,parent_code,behavior_name):
 	logger.debug("go into cal_indicator")
 	if "@mode"  not in  ioc_info.keys() or  ioc_info["@mode"]==0 or ioc_info["@mode"] == "0":
 		logger.debug("there is no mode or mode =0 in cal_indicator")
@@ -43,14 +43,14 @@ def  cal_indicator(ioc_info,process_info,parent_code):
 			code=ioc_info["@code"]
 # first get item value list under the current indicator,this list will merge the indicator value later 
 		if "IndicatorItem"   in ioc_info.keys():
-			for i in cal_indicatoritem(ioc_info,process_info):
+			for i in cal_indicatoritem(ioc_info,process_info,behavior_name):
 				current_sub.append(i)
 				ret.append(i[0])
 #  two case here, a) one sub-indicator in current indicator b) many sub-indicator  
 		if  "Indicator" in ioc_info.keys():
 # one sub , directly do it 
 			if type(ioc_info["Indicator"]) is dict:
-				j=cal_indicator(ioc_info["Indicator"],process_info,code)
+				j=cal_indicator(ioc_info["Indicator"],process_info,code,behavior_name)
 				ret.append(j[0])
 				current_sub.append(j)
 # put every sub-indicator  value into list 
@@ -95,7 +95,7 @@ def  cal_indicator(ioc_info,process_info,parent_code):
 #return  [30,30]   
 		if   op  == "++":
 			logger.debug("it is an ++ operator, calculate the times of match")
-			rest=cal_indicatoritem_times(ioc_info,process_info)
+			rest=cal_indicatoritem_times(ioc_info,process_info,behavior_name)
 			return [rest, rest]
 	logger.debug("there is specical mode  in cal_indicator")
 #spec case,  use every log to iter the indicator and sub-indicator, if there is 1 for any log, the indicator is 1
@@ -107,7 +107,21 @@ def  cal_indicator(ioc_info,process_info,parent_code):
 #	and_list=[]
 #	or_max=0
 
-	for   i    in  process_info["information"]:
+
+
+#for mode 1,  just send the next time addtional logs into JSON check 
+
+
+
+	mode_1_start=process_info[behavior_name+"_"+"mode_1_start"]
+	mode_1_end  =process_info[behavior_name+"_"+"mode_1_end"]
+	for   log_index,  i    in enumerate( process_info["information"]):
+		
+#skip befort start 
+		if log_index  < mode_1_start:
+			continue
+		if log_index  >= mode_1_end:
+			continue
 		ret=[]
 		current_sub=[]
 		code=None
@@ -298,10 +312,10 @@ type_map={
 
 action_map={
 "CreateFile":"Create",	
-"WriteFile":"write",
-"ReadFile":"read",
-"CreateProcess":"created",
-"SetRegistry":"Modified",
+"WriteFile":"WRITE",
+"ReadFile":"READ",
+"CreateProcess":"CRAETE",
+"SetRegistry":"Value CREATE",
 "QueryRegistry":"GetValueKey"
 
 }
@@ -669,7 +683,7 @@ def match_rule_log(item, process_info,log,parent_code):
 	return [matched, code]
 
 #it calculate  the times of each matched item 
-def cal_indicatoritem_times(ioc_info,process_info):
+def cal_indicatoritem_times(ioc_info,process_info,behavior_name):
 	logger.debug("the extract_list is  %s"%(extract_list))
 	index=extract_list.index(process_info)
 	logger.debug("will calculate how many times match dealing with the seq %d in extract_list "%(index))
@@ -677,17 +691,17 @@ def cal_indicatoritem_times(ioc_info,process_info):
 #if the ioc_info is dict, it means that there is only one item 
 	if type(ioc_info["IndicatorItem"]) is dict:
 		logger.debug( "ther is only  one item", ioc_info["IndicatorItem"])
-		ret=match_rule_times(ioc_info["IndicatorItem"], process_info,ioc_info["@code"])
+		ret=match_rule_times(ioc_info["IndicatorItem"], process_info,ioc_info["@code"],behavior_name)
 		logger.debug("the indicator item match times value is %d" %(ret))
 		return   ret
 # multi items 
 	print "there are items ", ioc_info["IndicatorItem"],  type(ioc_info["IndicatorItem"]), len(ioc_info["IndicatorItem"])
 	for i in ioc_info["IndicatorItem"]:
-		ret+=match_rule_times(i,process_info,ioc_info["@code"])
+		ret+=match_rule_times(i,process_info,ioc_info["@code"],behavior_name)
 	logger.debug( "the indicator item match list match value sum is %d" %(ret))
 	return ret
 # it calculate  process_info logs match how much times from item 
-def match_rule_times(item, process_info, parent_code):
+def match_rule_times(item, process_info, parent_code,behavior_name):
 	matched =0
 	condition=item["@condition"]
 	type=item["Context"]["@document"]
@@ -766,10 +780,20 @@ def match_rule_times(item, process_info, parent_code):
  		return 0
 	if match_action  not in  process_info["hash_info"][match_type]:
 		return 0
-	#for   log_index , i    in  enumerate(process_info["information"]):
+
+#only do start to end this time 
+
+
+	start=process_info[behavior_name+"_"+match_type+"_"+match_action+"this_time_start"]
+	end  =process_info[behavior_name+"_"+match_type+"_"+match_action+"this_time_end"]
+
 	for   log_index , i    in  enumerate(process_info["hash_info"][match_type][match_action]):
-	#for   log_index , i    in  enumerate(process_info["information"]):
-		#log_index=process_info["information"].index(i)
+
+#skip befort start 
+		if log_index  < start:
+			continue
+		if log_index  >= end:
+			continue
 		seq_index=extract_list.index(process_info)
 		logger.debug("process the %dth log  total current log number %d  for seq %d ,log content:%s "%(log_index,len(process_info["information"]), seq_index,i))
 		if  i["type"] ==match_type and i["action"] == match_action :
@@ -979,7 +1003,7 @@ def  format_content(content):
 
 #item is a dict of rule, return [ 0|1 , code ] matches this rule
 #if code is defined, use it or  inherit from parent 
-def match_rule(item, process_info, parent_code):
+def match_rule(item, process_info, parent_code, behavior_name):
 	logger.debug("the extract_list is  %s"%(extract_list))
 	index=extract_list.index(process_info)
 	logger.debug("match_rule will deal with the seq %d in extract_list "%(index))
@@ -1061,7 +1085,23 @@ def match_rule(item, process_info, parent_code):
 	if match_action  not in  process_info["hash_info"][match_type]:
 		return [0,0]
 	#for   log_index , i    in  enumerate(process_info["information"]):
+
+
+
+#only do start to end this time 
+
+
+	start=process_info[behavior_name+"_"+match_type+"_"+match_action+"this_time_start"]
+	end  =process_info[behavior_name+"_"+match_type+"_"+match_action+"this_time_end"]
+
 	for   log_index , i    in  enumerate(process_info["hash_info"][match_type][match_action]):
+
+#skip befort start 
+		if log_index  < start:
+			continue
+		if log_index  >= end:
+			continue
+
 		#log_index=process_info["information"].index(i)
 		seq_index=extract_list.index(process_info)
 		logger.debug("process the %dth log  total current log number %d  for seq %d ,log content:%s "%(log_index,len(process_info["information"]), seq_index,i))
@@ -1278,21 +1318,22 @@ def match_rule(item, process_info, parent_code):
 		logger.debug(" in match_rule :After current logs is checked,  Matchs a rule !!!!!")
 	else:
 		logger.debug("in match_rule: no luck to match the rule for all current logs ")
+
 	return [matched, code]
 #return a list [ 1, 0, 1 , 1... ] each is a return value of ruleN
 
-def cal_indicatoritem(ioc_info,process_info):
+def cal_indicatoritem(ioc_info,process_info,behavior_name):
 	ret=[]
 #if the ioc_info is dict, it means that there is only one item 
 	if type(ioc_info["IndicatorItem"]) is dict:
 		print "ther is only  one item", ioc_info["IndicatorItem"] 
-		ret.append(match_rule(ioc_info["IndicatorItem"], process_info,ioc_info["@code"]))
+		ret.append(match_rule(ioc_info["IndicatorItem"], process_info,ioc_info["@code"],behavior_name))
 		print "the indicator item list value is %s" %(ret)
 		return   ret
 # multi items 
 	print "there are items ", ioc_info["IndicatorItem"],  type(ioc_info["IndicatorItem"]), len(ioc_info["IndicatorItem"])
 	for i in ioc_info["IndicatorItem"]:
-		ret.append(match_rule(i,process_info,ioc_info["@code"]))
+		ret.append(match_rule(i,process_info,ioc_info["@code"], behavior_name))
 	print "the indicator item list value is %s" %(ret)
 	return ret
 
@@ -1308,21 +1349,101 @@ def get_process_behavior_list(process_info,behavior_path):
 		j=json.load(f)
 		name.append(j["Behaviour"]["@description"])
 		logger.debug("dealing with behavior %s " %(j["Behaviour"]["@description"]))
-		foo=cal_indicator(j["Behaviour"]["Indicator"], process_info,1)
+#to support incremental logs analysis, before into each JSON check, record this time len of each lists, so that next
+#time, the start is the record len instead of from begin.also  record the ret/code of this time, so that can OR this and 
+#last time ret, and return the max code .
+
+
+
+#befor go into Nth-JSON check, set the end of this time check, which is also the next time start point
+
+		for  resource_type in process_info["hash_info"].keys():
+			for action in process_info["hash_info"][resource_type].keys():
+				foo=len(process_info["hash_info"][resource_type][action])
+				if  j["Behaviour"]["@name"]+"_"+resource_type+"_"+action+"this_time_start"  not in process_info.keys():
+					process_info[j["Behaviour"]["@name"]+"_"+resource_type+"_"+action+"this_time_start"]=0
+
+				process_info[j["Behaviour"]["@name"]+"_"+resource_type+"_"+action+"this_time_end"]=foo
+
+
+#for mode 1, directly OP in process_info["information"]
+
+		if  j["Behaviour"]["@name"]+"_"+"mode_1_start" not in process_info.keys():
+			process_info[j["Behaviour"]["@name"]+"_"+"mode_1_start"]=0
+		process_info[j["Behaviour"]["@name"]+"_"+"mode_1_end"]=len(process_info["information"])
+
+
+		
+		foo=cal_indicator(j["Behaviour"]["Indicator"], process_info,1, j["Behaviour"]["@name"])
+
+	
+#after this Nth-Json check, set the next time start 
+
+		
+		for  resource_type in process_info["hash_info"].keys():
+			for action in process_info["hash_info"][resource_type].keys():
+				if  j["Behaviour"]["@name"]+"_"+resource_type+"_"+action+"this_time_end"   in process_info.keys():
+					process_info[j["Behaviour"]["@name"]+"_"+resource_type+"_"+action+"this_time_start"]=process_info[ j["Behaviour"]["@name"]+"_"+resource_type+"_"+action+"this_time_end"]
+
+
+#for mode 1, set the next time start 
+		if j["Behaviour"]["@name"]+"_"+"mode_1_end"  in  process_info.keys():
+			process_info[j["Behaviour"]["@name"]+"_"+"mode_1_start"]=process_info[j["Behaviour"]["@name"]+"_"+"mode_1_end"]
+
+
+
+
+#   first time  Nth-JSON result.
+		if j["Behaviour"]["@name"]+"_"+"this_time_ret" not in process_info.keys():
+		
+
+			process_info[j["Behaviour"]["@name"]+"_"+"this_time_ret"]=foo[0]
+			process_info[j["Behaviour"]["@name"]+"_"+"this_time_code"]=foo[1]
+
+# not the first, need merge with previous result 
+
+		else:
+			old_ret=process_info[j["Behaviour"]["@name"]+"_"+"this_time_ret"] 
+			old_code=process_info[j["Behaviour"]["@name"]+"_"+"this_time_code"]
+
+
+			if j["Behaviour"]["Indicator"]["@operator"] != "++":
+
+			#already 1 before, just return 
+				if int (old_ret) ==1:
+					foo[0]=1
+					foo[1]=process_info[j["Behaviour"]["@name"]+"_"+"this_time_code"]
+	
+				#first time find it is 1, update the record 
+	
+				else:
+					process_info[j["Behaviour"]["@name"]+"_"+"this_time_ret"]=foo[0]
+					process_info[j["Behaviour"]["@name"]+"_"+"this_time_code"]=foo[1]
+			else:
+
+					process_info[j["Behaviour"]["@name"]+"_"+"this_time_ret"]=process_info[j["Behaviour"]["@name"]+"_"+"this_time_ret"]+foo[0]			
+	
+
+
 		if j["Behaviour"]["Indicator"]["@operator"] == "++":
 			#ret.append(foo)
-			print  "the behavior is %d " %foo[0]
+			print  "the behavior %s  is %d " %(j["Behaviour"]["@name"],foo[0])
 		else:
-			print  "the behavior is %d " %foo[0]
+			print  "the behavior %s is %d " %(j["Behaviour"]["@name"],foo[0])
 	#code value maybe list or value 
+			logger.debug("type foo is %s"%(foo))
+			logger.debug("type foo[1] is %s" %((foo[1])))
+			print type(foo[1])
 			if type(foo[1]) is list:
 				print  "the behavior code is %s" %foo[1]
 			else:
 				print  "the behavior code is %d" %int(foo[1])
 		logger.debug("dealing with behavior %s is done"%( j["Behaviour"]["@description"]))
 		logger.debug("dealing with behavior %s result: binary value:%s  code value:%s"%( j["Behaviour"]["@description"], foo[0], foo[1]))
-		code.append(foo[1])
-		ret.append(foo[0])
+	#add this Nth-JSON result,   
+
+		code.append(process_info[j["Behaviour"]["@name"]+"_"+"this_time_code"])
+		ret.append(process_info[j["Behaviour"]["@name"]+"_"+"this_time_ret"])
 	print  "behavior name list  %s" %(name)
 	print  "behavior result %s"%(ret)
 	print  "behavior code  %s"%(code)

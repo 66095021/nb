@@ -89,7 +89,6 @@ def add_meta_to_pid_info(pid_info,meta):
     if meta["action"] not in pid_info["hash_info"][meta["type"]].keys():
         pid_info["hash_info"][meta["type"]][meta["action"]]=[]
 
-    pid_info["information"].append(meta)
     pid_info["hash_info"][meta["type"]][meta["action"]].append(meta)
     if meta["type"] == "url":
          url=meta["object1"]
@@ -494,14 +493,14 @@ def run_loop(self,dir):
                 #json.dump(extract_list,f)
                 #f.close()
                  #print i
-        time.sleep(1)
+        time.sleep(5)
 
 
 def  analysis_it(self,path_behavior):
     global extract_list
     while True:
 	
-        time.sleep(60)
+        time.sleep(10)
         for i in extract_list:
             if "information" not in i.keys():
                 f=extract_list.index(i)
