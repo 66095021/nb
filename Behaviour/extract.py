@@ -580,6 +580,40 @@ class MyThread3(threading.Thread):
      def run(self):
          self.logger.debug("get url rank is  working now")
          do_url_rank_job(self.url,self.pid_info)
+#go through all malicous app url info, store it
+def update_url_db():
+	global extract_list
+
+	while True:
+		time.sleep(5)
+		db_file="/tmp/urldb"
+	        for index, i  in enumerate(extract_list):
+			if "goodbad" in  i.keys():
+				if i["goodbad"]== 1 or  i["goodbad"] == '1':
+					if "hash_info" in i.keys() and   "http" in i["hash_info"].keys():
+						content=[]
+						if os.path.isfile(db_file):
+							fp=open(db_file,'r')
+							content=fp.readlines()
+							fp.close()
+						for url in i["hash_info"]["http"].keys():
+							if url+'\n' not in content:
+								content.append(url+'\n')
+								g=open(db_file,"w")
+								g.writelines(content)
+							 	g.close()
+					
+		
+					
+		
+class MyThread4(threading.Thread):
+     def __init__(self):  
+        threading.Thread.__init__(self)  
+        self.logger=logger
+        #self.num = num
+     def run(self):
+         self.logger.debug("update malicous url db working now")
+         update_url_db()
 
 def handler(signum, frame):
     print "receive a signal %d"%(signum)
@@ -606,6 +640,13 @@ if __name__ == "__main__":
     analysis.setDaemon(True)
     analysis.setName("Thread2-analysis")
     t.append(analysis)
+
+
+    urldb=MyThread4()
+    urldb.setDaemon(True)
+    urldb.setName("Thread4-urldb")
+    t.append(urldb)
+    urldb.start()
     extract.start()
     analysis.start()
     while 1:
